@@ -1,0 +1,38 @@
+import { Link, NavLink } from 'react-router-dom';
+import { Boxes } from 'lucide-react';
+import Logo from '../ui/Logo';
+
+const NAV_LINK_BASE =
+  'rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-primary-soft/60';
+
+export default function Header() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-line/80 bg-white/80 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+        <Link
+          to="/"
+          className="flex items-center gap-2 rounded-lg"
+          aria-label="Raccoonie — về trang chủ"
+        >
+          <Logo height={40} />
+          {/* Chữ hiệu gradient hồng -> tím, lấy theo web cũ ("✦ Custom Clicker").
+              bg-clip-text + text-transparent để gradient chạy trên chữ. */}
+          <span className="hidden bg-gradient-to-r from-brandPink to-brandPurple bg-clip-text font-display text-lg font-bold text-transparent sm:inline">
+            Custom Clicker
+          </span>
+        </Link>
+
+        <nav className="flex items-center gap-1" aria-label="Điều hướng chính">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `${NAV_LINK_BASE} ${isActive ? 'bg-primary-soft text-primary' : 'text-ink'}`
+            }
+          >
+            <span className="flex items-center gap-1.5"><Boxes className="h-4 w-4" /> Sản phẩm</span>
+          </NavLink>
+        </nav>
+      </div>
+    </header>
+  );
+}
