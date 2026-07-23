@@ -93,12 +93,6 @@ export default function KeyCustomizer({
                     {text || '·'}
                   </span>
                 )}
-                <span
-                  className="pointer-events-none absolute bottom-2 right-3 text-[11px] font-bold"
-                  style={{ color: colors.text, opacity: 0.85 }}
-                >
-                  S{index + 1}
-                </span>
               </button>
             );
           })}

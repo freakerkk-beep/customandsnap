@@ -50,7 +50,7 @@ export default function ProductPreview({
   };
 
   return (
-    <div className={compact ? 'mx-auto w-full max-w-[430px]' : 'card-surface p-5'}>
+    <div className={compact ? 'mx-auto w-full max-w-[660px]' : 'card-surface p-5'}>
       <div className={`flex items-center justify-between gap-2 ${compact ? 'mb-2' : 'mb-4'}`}>
         <p className={compact ? 'text-xs text-ink-muted' : 'text-base font-semibold'}>
           {compact ? 'Xem trước clicker của bạn' : 'Xem trước'}
@@ -80,7 +80,7 @@ export default function ProductPreview({
 
       <div
         ref={captureRef}
-        className={compact ? 'rounded-2xl bg-white px-2 py-3 sm:px-5' : 'rounded-xl bg-cream p-4'}
+        className={compact ? 'flex min-h-[190px] items-center justify-center rounded-2xl bg-white px-3 py-7 sm:px-8 sm:py-10' : 'rounded-xl bg-cream p-4'}
       >
         <ClickerTray
           keys={customData.keys}
