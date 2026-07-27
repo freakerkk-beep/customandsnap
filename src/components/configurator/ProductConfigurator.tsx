@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, Copy, RotateCcw, ShoppingCart, Undo2 } from 'luc
 import type { ProductConfig } from '../../types/product';
 import { useConfiguratorState } from '../../hooks/useConfiguratorState';
 import { hasErrors, validateDesign } from '../../utils/validation';
-import { normalizeQuickName } from '../../../shared/sanitize';
 import Button from '../ui/Button';
 import { useToast } from '../ui/Toast';
 import CharacterCountSelector from './CharacterCountSelector';
@@ -28,7 +27,6 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
   const [maxReachedStep, setMaxReachedStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [capturing, setCapturing] = useState(false);
-  const [quickName, setQuickName] = useState('');
   const sectionRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const embedMode = new URLSearchParams(window.location.search).get('embed') === '1';
@@ -52,24 +50,7 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
     setStep(1);
     setMaxReachedStep(1);
     setErrors({});
-    setQuickName('');
     showToast('Đã bắt đầu một thiết kế mới.', 'info');
-  };
-
-  const handleQuickNameChange = (rawValue: string) => {
-    const preserveCase = product.templateType === 'round-clicker';
-    const normalized = normalizeQuickName(
-      rawValue,
-      product.pricing.maxCharacters,
-      preserveCase,
-    );
-    setQuickName(normalized);
-    config.setTextSequence(Array.from(normalized));
-    setErrors((current) => {
-      const next = { ...current };
-      delete next.keys;
-      return next;
-    });
   };
 
   const validate = () => {
@@ -183,35 +164,6 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
 
           <div className="mt-6 space-y-7">
             <ProductPreview product={product} customData={config.customData} palette={palette} captureRef={previewRef} compact />
-
-            <section className="rounded-2xl border border-primary/20 bg-primary-soft/20 p-4 sm:p-5">
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <div>
-                  <h3 className="font-display text-sm font-bold uppercase tracking-wide text-primary">
-                    Nhập tên nhanh
-                  </h3>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    Dán cả tên một lần, hệ thống tự bỏ dấu, đếm ký tự và chia vào từng phím.
-                  </p>
-                </div>
-                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-primary shadow-soft">
-                  {quickName.length}/{product.pricing.maxCharacters} ký tự
-                </span>
-              </div>
-              <input
-                type="text"
-                value={quickName}
-                onChange={(event) => handleQuickNameChange(event.target.value)}
-                placeholder={product.templateType === 'round-clicker' ? 'Ví dụ: Nguyen hoặc NGUYEN' : 'Ví dụ: NGUYỄN → NGUYEN'}
-                autoCapitalize={product.templateType === 'round-clicker' ? 'off' : 'characters'}
-                className={`field-input mt-3 text-xl font-key font-black ${product.templateType === 'round-clicker' ? '' : 'uppercase'}`}
-              />
-              <p className="mt-2 text-xs text-ink-muted">
-                {product.templateType === 'round-clicker'
-                  ? 'Clicker tròn giữ nguyên chữ HOA/thường như bạn nhập.'
-                  : 'Sản phẩm này tự chuyển toàn bộ thành chữ IN HOA.'}
-              </p>
-            </section>
 
             {step === 1 ? (
               <>
