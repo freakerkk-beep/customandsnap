@@ -3,6 +3,18 @@ import Footer from './Footer';
 import Header from './Header';
 
 export default function Layout() {
+  const embedMode = new URLSearchParams(window.location.search).get('embed') === '1';
+
+  if (embedMode) {
+    return (
+      <div className="min-h-screen bg-white">
+        <main id="main">
+          <Outlet />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <a

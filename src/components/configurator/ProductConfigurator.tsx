@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Copy, RotateCcw, Undo2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Copy, RotateCcw, ShoppingCart, Undo2 } from 'lucide-react';
 import type { ProductConfig } from '../../types/product';
 import { useConfiguratorState } from '../../hooks/useConfiguratorState';
 import { hasErrors, validateDesign } from '../../utils/validation';
@@ -31,6 +31,7 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
   const [quickName, setQuickName] = useState('');
   const sectionRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const embedMode = new URLSearchParams(window.location.search).get('embed') === '1';
 
   const palette = useMemo(
     () => product.palettes.find((item) => item.id === config.state.colorPaletteId),
@@ -109,6 +110,47 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
     } finally {
       setCapturing(false);
     }
+  };
+
+  const handleFinish = () => {
+    if (!validate()) return;
+
+    const keyContents = config.customData.keys.map((key) =>
+      key.type === 'text' ? key.value : `[ICON:${key.iconId}]`,
+    );
+    const keyColors = config.customData.keys.map((key) => key.keyColor ?? '');
+
+    const allowedParents = new Set([
+      'https://raccoonie.vn',
+      'https://www.raccoonie.vn',
+      'https://qky4nh-kq.myshopify.com',
+    ]);
+    let parentOrigin = 'https://raccoonie.vn';
+    try {
+      const referrerOrigin = new URL(document.referrer).origin;
+      if (allowedParents.has(referrerOrigin)) parentOrigin = referrerOrigin;
+    } catch {
+      // Giữ domain chính khi trình duyệt không cung cấp referrer.
+    }
+
+    window.parent.postMessage(
+      {
+        source: 'raccoonie-customizer',
+        type: 'RACCOONIE_CUSTOMIZER_COMPLETE',
+        payload: {
+          version: 1,
+          productSlug: product.slug,
+          productName: product.name,
+          characterCount: config.customData.characterCount,
+          colorPaletteId: config.customData.colorPaletteId,
+          paletteName: palette?.name ?? '',
+          keyContents,
+          keyColors,
+          displayName: keyContents.join(''),
+        },
+      },
+      parentOrigin,
+    );
   };
 
   return (
@@ -211,6 +253,11 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
                 <Button variant="secondary" size="lg" onClick={handleCopy} disabled={capturing} className="sm:flex-1" icon={<Copy className="h-4 w-4" />}>
                   Copy ảnh
                 </Button>
+                {embedMode ? (
+                  <Button size="lg" onClick={handleFinish} className="sm:flex-1" icon={<ShoppingCart className="h-4 w-4" />}>
+                    Hoàn tất &amp; thêm vào giỏ
+                  </Button>
+                ) : null}
               </>
             )}
           </div>

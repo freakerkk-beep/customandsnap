@@ -5,6 +5,12 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors https://raccoonie.vn https://www.raccoonie.vn https://qky4nh-kq.myshopify.com"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
 # SPA fallback: mọi đường dẫn không phải file tĩnh đều do React Router xử lý.
 [[redirects]]
   from = "/*"
