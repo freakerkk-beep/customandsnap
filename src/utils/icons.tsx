@@ -1,6 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
-import type { ComponentType, SVGProps } from 'react';
+import React, { useId, type ComponentType, type SVGProps } from 'react';
 import type { IconId } from '../types/product';
+
+// `tsx` dùng React classic khi chạy test trực tiếp; Vite dùng JSX automatic.
+void React;
 
 export type ClickerIconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -50,9 +53,35 @@ function LuckyLeafIcon(props: SVGProps<SVGSVGElement>) {
 
 function assetIcon(fileName: string): ClickerIconComponent {
   return function AssetIcon(props: SVGProps<SVGSVGElement>) {
+    const maskId = `clicker-icon-${useId().replace(/:/g, '')}`;
+
     return (
-      <svg viewBox="0 0 100 100" focusable="false" {...props}>
-        <image href={`/assets/pencil-icons/${fileName}`} x="5" y="5" width="90" height="90" />
+      <svg
+        viewBox="0 0 100 100"
+        fill="currentColor"
+        focusable="false"
+        aria-hidden="true"
+        {...props}
+      >
+        <defs>
+          <mask id={maskId} maskUnits="userSpaceOnUse" x="5" y="5" width="90" height="90">
+            <image
+              href={`/assets/pencil-icons/${fileName}`}
+              x="5"
+              y="5"
+              width="90"
+              height="90"
+            />
+          </mask>
+        </defs>
+        <rect
+          x="5"
+          y="5"
+          width="90"
+          height="90"
+          fill="currentColor"
+          mask={`url(#${maskId})`}
+        />
       </svg>
     );
   };
