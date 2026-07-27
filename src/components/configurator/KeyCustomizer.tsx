@@ -37,6 +37,7 @@ export default function KeyCustomizer({
 
   const colors = palette ?? { ...FALLBACK, id: 'fallback', name: 'fallback', code: 'fallback' };
   const preserveCase = product.templateType === 'round-clicker';
+  const supportsIcons = product.icons.length > 0;
   const visibleKeys = useMemo(() => keys.slice(0, characterCount), [keys, characterCount]);
   const activeKey = visibleKeys[activeIndex] ?? { type: 'text', value: '' as const };
   const isText = activeKey.type === 'text';
@@ -123,7 +124,7 @@ export default function KeyCustomizer({
           </div>
         ) : null}
 
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className={`mt-3 grid gap-2 ${supportsIcons ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
           <button
             type="button"
             onClick={setTextMode}
@@ -136,18 +137,20 @@ export default function KeyCustomizer({
           >
             Aa Chữ / Số
           </button>
-          <button
-            type="button"
-            onClick={setIconMode}
-            className={[
-              'rounded-2xl border px-4 py-3 text-center text-lg font-semibold transition-all',
-              !isText
-                ? 'border-primary bg-primary text-white shadow-soft'
-                : 'border-line bg-white text-primary hover:bg-primary-soft/30',
-            ].join(' ')}
-          >
-            ✦ Icon
-          </button>
+          {supportsIcons ? (
+            <button
+              type="button"
+              onClick={setIconMode}
+              className={[
+                'rounded-2xl border px-4 py-3 text-center text-lg font-semibold transition-all',
+                !isText
+                  ? 'border-primary bg-primary text-white shadow-soft'
+                  : 'border-line bg-white text-primary hover:bg-primary-soft/30',
+              ].join(' ')}
+            >
+              ✦ Icon
+            </button>
+          ) : null}
         </div>
 
         {isText ? (
@@ -181,7 +184,7 @@ export default function KeyCustomizer({
               </span>
             </div>
           </div>
-        ) : (
+        ) : supportsIcons ? (
           <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5" role="radiogroup" aria-label={`Chọn icon cho phím ${activeIndex + 1}`}>
             {product.icons.map((icon) => {
               const Icon = getIconComponent(icon.id);
@@ -210,7 +213,7 @@ export default function KeyCustomizer({
               );
             })}
           </div>
-        )}
+        ) : null}
 
         {errorMessage ? (
           <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -220,7 +223,9 @@ export default function KeyCustomizer({
 
         <div className="mt-4 flex items-center gap-2 rounded-2xl bg-primary-soft/35 px-4 py-3 text-sm text-ink-muted">
           <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-          Mỗi phím bắt buộc có đúng 1 ký tự hoặc 1 icon.
+          {supportsIcons
+            ? 'Mỗi phím bắt buộc có đúng 1 ký tự hoặc 1 icon.'
+            : 'Mỗi phím bắt buộc có đúng 1 chữ hoặc 1 số.'}
         </div>
       </div>
     </section>

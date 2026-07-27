@@ -1,4 +1,3 @@
-import { CLICKER_ICON_CATALOG } from '../../shared/icons';
 import type { PricingConfig } from '../../shared/pricing';
 import type { ProductConfig } from '../types/product';
 
@@ -24,8 +23,8 @@ export const pencilClickerProduct: ProductConfig = {
   slug: 'pencil-clicker',
   name: 'Móc Khóa Clicky Bút Chì Custom Tên Theo Yêu Cầu',
   templateType: 'pencil',
-  shortDescription: 'Móc khóa clicky hình bút chì gồm đầu bút, 3–9 phím chữ hoặc icon và đuôi bút.',
-  longDescription: 'Tự chọn nội dung và màu riêng cho từng phím. Chữ và icon luôn màu đen.',
+  shortDescription: 'Móc khóa clicky hình bút chì gồm đầu bút, 3–9 phím chữ hoặc số và đuôi bút.',
+  longDescription: 'Tự chọn chữ, số và màu riêng cho từng phím. Ký tự luôn màu đen.',
   images: [
     { src: '/products/pencil-clicker/cover.png', alt: 'Móc khóa clicky bút chì custom tên' },
     { src: '/products/pencil-clicker/color-reference.png', alt: 'Bảng màu phím clicky bút chì' },
@@ -43,9 +42,9 @@ export const pencilClickerProduct: ProductConfig = {
     { id: 'blue', name: 'Xanh dương', hex: '#1767DF' },
     { id: 'orange', name: 'Cam', hex: '#FF8A20' },
   ],
-  icons: CLICKER_ICON_CATALOG.map((icon) => ({ ...icon })),
+  icons: [],
   switches: [{ id: 'clicky', name: 'Clicky', description: '', soundTraits: [], sampleAudioUrl: '' }],
   benefits: [],
-  notes: ['Mỗi sản phẩm gồm đầu bút, 3–9 phím custom và đuôi bút.', 'Chữ và icon màu đen.'],
+  notes: ['Mỗi sản phẩm gồm đầu bút, 3–9 phím custom và đuôi bút.', 'Chỉ nhận chữ và số; ký tự màu đen.'],
   active: true,
 };
