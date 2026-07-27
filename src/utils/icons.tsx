@@ -1,6 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { useId, type ComponentType, type SVGProps } from 'react';
+import React, { type ComponentType, type SVGProps } from 'react';
 import type { IconId } from '../types/product';
+import badmintonSvg from '../assets/pencil-icons/badminton.svg?raw';
+import cameraSvg from '../assets/pencil-icons/camera.svg?raw';
+import headphoneSvg from '../assets/pencil-icons/headphone.svg?raw';
+import moonSvg from '../assets/pencil-icons/moon.svg?raw';
+import pickleSvg from '../assets/pencil-icons/pickle.svg?raw';
+import planeSvg from '../assets/pencil-icons/plane.svg?raw';
+import ribbonSvg from '../assets/pencil-icons/ribbon.svg?raw';
+import sunSvg from '../assets/pencil-icons/sun.svg?raw';
+import tennisSvg from '../assets/pencil-icons/tennis.svg?raw';
 
 // `tsx` dùng React classic khi chạy test trực tiếp; Vite dùng JSX automatic.
 void React;
@@ -51,38 +60,22 @@ function LuckyLeafIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function assetIcon(fileName: string): ClickerIconComponent {
-  return function AssetIcon(props: SVGProps<SVGSVGElement>) {
-    const maskId = `clicker-icon-${useId().replace(/:/g, '')}`;
+function inlineAssetIcon(rawSvg: string): ClickerIconComponent {
+  const innerSvg = rawSvg
+    .replace(/^[\s\S]*?<svg\b[^>]*>/i, '')
+    .replace(/<\/svg>[\s\S]*$/i, '')
+    .replace(/\sfill=(['"])(?:#000(?:000)?|black)\1/gi, '');
 
+  return function AssetIcon(props: SVGProps<SVGSVGElement>) {
     return (
       <svg
-        viewBox="0 0 100 100"
+        viewBox="0 0 2551.18 2551.18"
         fill="currentColor"
         focusable="false"
         aria-hidden="true"
         {...props}
-      >
-        <defs>
-          <mask id={maskId} maskUnits="userSpaceOnUse" x="5" y="5" width="90" height="90">
-            <image
-              href={`/assets/pencil-icons/${fileName}`}
-              x="5"
-              y="5"
-              width="90"
-              height="90"
-            />
-          </mask>
-        </defs>
-        <rect
-          x="5"
-          y="5"
-          width="90"
-          height="90"
-          fill="currentColor"
-          mask={`url(#${maskId})`}
-        />
-      </svg>
+        dangerouslySetInnerHTML={{ __html: innerSvg }}
+      />
     );
   };
 }
@@ -97,15 +90,15 @@ const ICON_COMPONENTS: Record<IconId, ClickerIconComponent> = {
   flower: FlowerIcon,
   dog_feet: DogFeetIcon,
   lucky_leaf: LuckyLeafIcon,
-  camera: assetIcon('camera.svg'),
-  tennis: assetIcon('tennis.svg'),
-  badminton: assetIcon('badminton.svg'),
-  plane: assetIcon('plane.svg'),
-  pickle: assetIcon('pickle.svg'),
-  sun: assetIcon('sun.svg'),
-  headphone: assetIcon('headphone.svg'),
-  moon: assetIcon('moon.svg'),
-  ribbon: assetIcon('ribbon.svg'),
+  camera: inlineAssetIcon(cameraSvg),
+  tennis: inlineAssetIcon(tennisSvg),
+  badminton: inlineAssetIcon(badmintonSvg),
+  plane: inlineAssetIcon(planeSvg),
+  pickle: inlineAssetIcon(pickleSvg),
+  sun: inlineAssetIcon(sunSvg),
+  headphone: inlineAssetIcon(headphoneSvg),
+  moon: inlineAssetIcon(moonSvg),
+  ribbon: inlineAssetIcon(ribbonSvg),
 };
 
 export function getIconComponent(id: string): ClickerIconComponent | null {

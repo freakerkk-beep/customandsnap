@@ -86,7 +86,7 @@ export default function ProductPreview({
           keys={customData.keys}
           palette={palette}
           switchType={customData.switchType}
-          showMeta={!compact}
+          showMeta
           product={product}
         />
       </div>

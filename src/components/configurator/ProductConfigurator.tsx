@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Copy, RotateCcw, ShoppingCart, Undo2 } from 'lucide-react';
 import type { ProductConfig } from '../../types/product';
 import { useConfiguratorState } from '../../hooks/useConfiguratorState';
@@ -27,9 +27,27 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
   const [maxReachedStep, setMaxReachedStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [capturing, setCapturing] = useState(false);
+  const [finishing, setFinishing] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const embedMode = new URLSearchParams(window.location.search).get('embed') === '1';
+
+  useEffect(() => {
+    const handleParentMessage = (event: MessageEvent) => {
+      const allowedParents = new Set([
+        'https://raccoonie.vn',
+        'https://www.raccoonie.vn',
+        'https://qky4nh-kq.myshopify.com',
+      ]);
+      if (!allowedParents.has(event.origin)) return;
+      if (event.data?.type !== 'RACCOONIE_CUSTOMIZER_ADD_ERROR') return;
+      setFinishing(false);
+      showToast(event.data.message || 'Không thể thêm thiết kế vào giỏ hàng.', 'error');
+    };
+
+    window.addEventListener('message', handleParentMessage);
+    return () => window.removeEventListener('message', handleParentMessage);
+  }, [showToast]);
 
   const palette = useMemo(
     () => product.palettes.find((item) => item.id === config.state.colorPaletteId),
@@ -63,11 +81,14 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
     return true;
   };
 
-  const makeImage = async () => {
-    if (!previewRef.current) throw new Error('Preview is unavailable');
+  const makeImage = async (
+    node: HTMLDivElement | null = previewRef.current,
+    pixelRatio = 4,
+  ) => {
+    if (!node) throw new Error('Preview is unavailable');
     const { toPng } = await import('html-to-image');
-    return toPng(previewRef.current, {
-      pixelRatio: 4,
+    return toPng(node, {
+      pixelRatio,
       backgroundColor: '#FFFFFF',
       cacheBust: true,
     });
@@ -93,7 +114,7 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (!validate()) return;
 
     const keyContents = config.customData.keys.map((key) =>
@@ -114,24 +135,52 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
       // Giữ domain chính khi trình duyệt không cung cấp referrer.
     }
 
-    window.parent.postMessage(
-      {
-        source: 'raccoonie-customizer',
-        type: 'RACCOONIE_CUSTOMIZER_COMPLETE',
-        payload: {
-          version: 1,
-          productSlug: product.slug,
-          productName: product.name,
-          characterCount: config.customData.characterCount,
-          colorPaletteId: config.customData.colorPaletteId,
-          paletteName: palette?.name ?? '',
-          keyContents,
-          keyColors,
-          displayName: keyContents.join(''),
+    setFinishing(true);
+    try {
+      const imageDataUrl = await makeImage(previewRef.current, 2);
+      const imageBlob = await (await fetch(imageDataUrl)).blob();
+      const imageBytes = await imageBlob.arrayBuffer();
+      const safeName =
+        keyContents
+          .map((value) => value.replace(/\[ICON:([^\]]+)\]/g, '$1'))
+          .join('-')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 40) || 'custom';
+      const designId = `RC-${Date.now().toString(36).toUpperCase()}`;
+
+      window.parent.postMessage(
+        {
+          source: 'raccoonie-customizer',
+          type: 'RACCOONIE_CUSTOMIZER_COMPLETE',
+          payload: {
+            version: 2,
+            designId,
+            productSlug: product.slug,
+            productName: product.name,
+            characterCount: config.customData.characterCount,
+            colorPaletteId: config.customData.colorPaletteId,
+            paletteName: palette?.name ?? '',
+            keyContents,
+            keyColors,
+            displayName: keyContents.join(''),
+            mockup: {
+              fileName: `${designId}-${product.slug}-${safeName}.png`,
+              mimeType: 'image/png',
+              bytes: imageBytes,
+            },
+          },
         },
-      },
-      parentOrigin,
-    );
+        parentOrigin,
+        [imageBytes],
+      );
+      config.commit();
+    } catch {
+      showToast('Không tạo được ảnh mockup. Vui lòng thử lại.', 'error');
+      setFinishing(false);
+    }
   };
 
   return (
@@ -206,8 +255,15 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
                   Copy ảnh
                 </Button>
                 {embedMode ? (
-                  <Button size="lg" onClick={handleFinish} className="sm:flex-1" icon={<ShoppingCart className="h-4 w-4" />}>
-                    Hoàn tất &amp; thêm vào giỏ
+                  <Button
+                    size="lg"
+                    onClick={handleFinish}
+                    disabled={finishing}
+                    loading={finishing}
+                    className="sm:flex-1"
+                    icon={<ShoppingCart className="h-4 w-4" />}
+                  >
+                    {finishing ? 'Đang tạo ảnh mockup…' : 'Hoàn tất & thêm vào giỏ'}
                   </Button>
                 ) : null}
               </>
@@ -215,7 +271,6 @@ export default function ProductConfigurator({ product }: ProductConfiguratorProp
           </div>
         </section>
       </div>
-
     </div>
   );
 }
